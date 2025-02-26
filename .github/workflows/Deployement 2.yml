@@ -1,34 +1,60 @@
 name: Deployment Exercise 2
+
 on: push
+
 jobs:
   lint:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Get code
+    steps:
+      - name: Check out repository
         uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # or whichever version you prefer
+
       - name: Install dependencies
-        run: npm.cmd ci
+        run: npm ci
+
       - name: Lint
-        run: npm.cmd run lint
+        run: npm run lint
+
   test:
     needs: lint
     runs-on: ubuntu-latest
-    steps: 
-      - name: Get code
+    steps:
+      - name: Check out repository
         uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
       - name: Install dependencies
-        run: npm.cmd ci
+        run: npm ci
+
       - name: Test code
-        run: npm.cmd run test
+        run: npm run test
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Get code
+      - name: Check out repository
         uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
       - name: Install dependencies
-        run: npm.cmd ci
+        run: npm ci
+
       - name: Build code
-        run: npm.cmd run build
+        run: npm run build
+
       - name: Deploy code
         run: echo "Deploying..."
