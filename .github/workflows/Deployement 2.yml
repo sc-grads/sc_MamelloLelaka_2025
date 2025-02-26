@@ -9,7 +9,7 @@ jobs:
       - name: Install dependencies
         run: npm.cmd ci
       - name: Lint
-        run: npmc.cmd run lint
+        run: npm.cmd run lint
   test:
     needs: lint
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: npm.cmd ci
       - name: Test code
-        run: npm run test
+        run: npm.cmd run test
   deploy:
     needs: test
     runs-on: ubuntu-latest
