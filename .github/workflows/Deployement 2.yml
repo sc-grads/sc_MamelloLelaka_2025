@@ -7,9 +7,9 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm ci
+        run: npm.cmd ci
       - name: Lint
-        run: npm run lint
+        run: npmc.cmd run lint
   test:
     needs: lint
     runs-on: ubuntu-latest
@@ -17,7 +17,7 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm ci
+        run: npm.cmd ci
       - name: Test code
         run: npm run test
   deploy:
@@ -27,8 +27,8 @@ jobs:
       - name: Get code
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: npm ci
+        run: npm.cmd ci
       - name: Build code
-        run: npm run build
+        run: npm.cmd run build
       - name: Deploy code
         run: echo "Deploying..."
