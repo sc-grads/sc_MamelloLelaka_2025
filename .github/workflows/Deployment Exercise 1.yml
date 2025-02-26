@@ -15,6 +15,7 @@ jobs:
           node-version: '16'  # or whichever version you prefer
 
       - name: Install dependencies
+        working-directory: ./02 Starting Projects
         run: npm install
 
       - name: Lint
