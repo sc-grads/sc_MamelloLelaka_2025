@@ -1,62 +1,15 @@
-name: Notify Teams
+name: Notify Teams on Merge
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
-
+    types:
+      - closed  # Runs only when a PR is merged or closed
 jobs:
-  notify:
+  notify-teams:
+    if: github.event.pull_request.merged == true  # Run only if PR is merged
     runs-on: ubuntu-latest
     steps:
-      - name: Post Adaptive Card to Teams
+      - name: Send notification to Microsoft Teams
         run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d '{
-                 "type": "message",
-                 "attachments": [
-                   {
-                     "contentType": "application/vnd.microsoft.card.adaptive",
-                     "content": {
-                       "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                       "version": "1.3",
-                       "type": "AdaptiveCard",
-                       "body": [
-                         {
-                           "type": "TextBlock",
-                           "text": "Mamello Pull Request",
-                           "size": "Large",
-                           "weight": "Bolder",
-                           "color": "Accent"
-                         },
-                         {
-                           "type": "TextBlock",
-                           "text": "Actor: ${{ github.event.pull_request.user.login }}"
-                         },
-                         {
-                           "type": "TextBlock",
-                           "text": "message | A pull request 🚀",
-                           "wrap": true
-                         },
-                         {
-                           "type": "TextBlock",
-                           "text": "1. **Title**: ${{ github.event.pull_request.title }}\n2. **Description**: ${{ github.event.pull_request.body }}\n3. **Author**: ${{ github.event.pull_request.user.login }}\n4. [View PR](${{ github.event.pull_request.html_url }})\n5. **Branch**: ${{ github.event.pull_request.head.ref }}",
-                           "wrap": true
-                         }
-                       ],
-                       "actions": [
-                         {
-                           "type": "Action.OpenUrl",
-                           "title": "View run",
-                           "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                         },
-                         {
-                           "type": "Action.OpenUrl",
-                           "title": "View commit",
-                           "url": "${{ github.event.pull_request.head.repo.html_url }}/commit/${{ github.event.pull_request.head.sha }}"
-                         }
-                       ]
-                     }
-                   }
-                 ]
-               }' \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+          curl -H "Content-Type: application/json" -d '{
+            "text": "A pull request has been successfully merged!\n\n*Repository:* `${{ github.repository }}`\n*PR Title:* `${{ github.event.pull_request.title }}`\n*Merged by:* `${{ github.event.pull_request.merged_by.login }}`\n[View PR](${{ github.event.pull_request.html_url }})"
+          }' ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
