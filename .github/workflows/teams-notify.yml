@@ -58,4 +58,4 @@ jobs:
                    }
                  ]
                }' \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               ${{ secrets.https://northerndata.webhook.office.com/webhookb2/436ca2b7-8ba6-4bf3-83fd-8d48e5093dfc@174c7352-9c5c-4558-b848-be140b444e7d/IncomingWebhook/75d45d4dc64549d68a3cb58af84f05bd/d6da0a29-420d-4f3a-baaa-d0d029e264a2/V2klzbwgssJ_vXeRuWQsEtCkV0Bya0w2GiLQ8jqcXM7KE1 }}
