@@ -1,15 +1,83 @@
-name: Notify Teams on Merge
+name: Teams Pull Requests
 on:
   pull_request:
-    types:
-      - closed  # Runs only when a PR is merged or closed
+    types: [opened, reopened, synchronize, closed]
+
 jobs:
-  notify-teams:
-    if: github.event.pull_request.merged == true  # Run only if PR is merged
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send notification to Microsoft Teams
+      - name: Send Adaptive Card to Teams
         run: |
-          curl -H "Content-Type: application/json" -d '{
-            "text": "A pull request has been successfully merged!\n\n*Repository:* `${{ github.repository }}`\n*PR Title:* `${{ github.event.pull_request.title }}`\n*Merged by:* `${{ github.event.pull_request.merged_by.login }}`\n[View PR](${{ github.event.pull_request.html_url }})"
-          }' ${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}
+          curl -X POST \
+               -H "Content-Type: application/json" \
+               -d '{
+                 "type": "message",
+                 "attachments": [
+                   {
+                     "contentType": "application/vnd.microsoft.card.adaptive",
+                     "content": {
+                       "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                       "version": "1.3",
+                       "type": "AdaptiveCard",
+                       "body": [
+                         {
+                           "type": "TextBlock",
+                           "text": "${{ github.event.pull_request.user.login }}'s Merge Confirmation 🎉",
+                           "size": "Large",
+                           "weight": "Bolder",
+                           "color": "Accent"
+                         },
+                         {
+                           "type": "TextBlock",
+                           "text": "Status: ${{ github.event.pull_request.merged ? 'Merged' : github.event.pull_request.draft ? 'Draft' : github.event.pull_request.state }}   Actor: ${{ github.actor }}",
+                           "wrap": true
+                         },
+                         {
+                           "type": "TextBlock",
+                           "text": "✅ **Merge Confirmation** ------------------------------- 🚀 **PR Details**",
+                           "wrap": true
+                         },
+                         {
+                           "type": "TextBlock",
+                           "text": "**Title**: ${{ github.event.pull_request.title }}\n**Description**: ${{ github.event.pull_request.body }}",
+                           "wrap": true
+                         },
+                         {
+                           "type": "TextBlock",
+                           "text": "🔧 **Action Summary**\n**Author**: ${{ github.event.pull_request.user.login }}\n**Approved By**: Unknown",
+                           "wrap": true
+                         },
+                         {
+                           "type": "TextBlock",
+                           "text": "📋 **Branch Information**\n**Source Branch**: ${{ github.event.pull_request.head.ref }}\n**Target Branch**: ${{ github.event.pull_request.base.ref }}",
+                           "wrap": true
+                         },
+                         {
+                           "type": "ActionSet",
+                           "actions": [
+                             {
+                               "type": "Action.OpenUrl",
+                               "title": "View PR",
+                               "url": "${{ github.event.pull_request.html_url }}"
+                             }
+                           ]
+                         }
+                       ],
+                       "actions": [
+                         {
+                           "type": "Action.OpenUrl",
+                           "title": "View run",
+                           "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                         },
+                         {
+                           "type": "Action.OpenUrl",
+                           "title": "View commit",
+                           "url": "${{ github.event.pull_request.head.repo.html_url }}/commit/${{ github.event.pull_request.head.sha }}"
+                         }
+                       ]
+                     }
+                   }
+                 ]
+               }' \
+               ${{ secrets.TEAMS_WEBHOOK_URL }}
