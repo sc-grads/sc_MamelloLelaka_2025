@@ -1,11 +1,9 @@
 name: Notify Teams on PR Events
-
 on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
   pull_request_review:
     types: [submitted]
-
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -22,8 +20,7 @@ jobs:
 }
 EOF
 )" \
-            ${{ secrets.TEAMS_WEBHOOK_URL }}
-
+            "${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}"
       # 2. Notify when a pull request review is submitted with an approval
       - name: Notify on PR approval
         if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
@@ -36,8 +33,7 @@ EOF
 }
 EOF
 )" \
-            ${{ secrets.TEAMS_WEBHOOK_URL }}
-
+            "${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}"
       # 3. Notify when a pull request is merged (closed and merged)
       - name: Notify on PR merge
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true }}
@@ -50,4 +46,4 @@ EOF
 }
 EOF
 )" \
-            ${{ secrets.TEAMS_WEBHOOK_URL }}
+            "${{ secrets.TEAMS_INCOMING_WEBHOOK_URL }}"
