@@ -10,8 +10,8 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Notify when a PR is created (or updated)
-      - name: Notify when PR is created
+      # Step 1: Notify when a PR is created or updated
+      - name: Notify on PR creation/update
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           curl -X POST \
@@ -19,10 +19,10 @@ jobs:
                -d '{
                      "text": "New Pull Request: #'"${{ github.event.pull_request.number }}"' opened by '"${{ github.event.pull_request.user.login }}"'.\nTitle: '"${{ github.event.pull_request.title }}"'\nLink: '"${{ github.event.pull_request.html_url }}"'"
                    }' \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               https://northerndata.webhook.office.com/webhookb2/436ca2b7-8ba6-4bf3-83fd-8d48e5093dfc@174c7352-9c5c-4558-b848-be140b444e7d/IncomingWebhook/75d45d4dc64549d68a3cb58af84f05bd/d6da0a29-420d-4f3a-baaa-d0d029e264a2/V2klzbwgssJ_vXeRuWQsEtCkV0Bya0w2GiLQ8jqcXM7KE1
 
       # Step 2: Notify when a PR is approved
-      - name: Notify when PR is approved
+      - name: Notify on PR approval
         if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
         run: |
           curl -X POST \
@@ -30,4 +30,4 @@ jobs:
                -d '{
                      "text": "Pull Request: #'"${{ github.event.pull_request.number }}"' has been APPROVED by '"${{ github.event.review.user.login }}"'.\nLink: '"${{ github.event.pull_request.html_url }}"'"
                    }' \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               https://northerndata.webhook.office.com/webhookb2/436ca2b7-8ba6-4bf3-83fd-8d48e5093dfc@174c7352-9c5c-4558-b848-be140b444e7d/IncomingWebhook/75d45d4dc64549d68a3cb58af84f05bd/d6da0a29-420d-4f3a-baaa-d0d029e264a2/V2klzbwgssJ_vXeRuWQsEtCkV0Bya0w2GiLQ8jqcXM7KE1
