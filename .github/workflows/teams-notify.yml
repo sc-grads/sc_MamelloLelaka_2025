@@ -1,11 +1,8 @@
-name: Notify Teams on PR and Approval
+name: Notify Teams on PR Events
 
 on:
-  # Trigger when a pull request is opened, reopened, or synchronized (e.g., new commits)
   pull_request:
     types: [opened, reopened, synchronize]
-  
-  # Trigger when a pull request review is submitted (this includes approvals)
   pull_request_review:
     types: [submitted]
 
@@ -13,24 +10,24 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      # Step A: Notify when a PR is opened
+      # Step 1: Notify when a PR is created (or updated)
       - name: Notify when PR is created
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "text": "New Pull Request: #'"${{ github.event.pull_request.number }}"' opened by '"${{ github.event.pull_request.user.login }}"'.\nTitle: '"${{ github.event.pull_request.title }}"'\nLink: '"${{ github.event.pull_request.html_url }}"'"
-               }' \
+                     "text": "New Pull Request: #'"${{ github.event.pull_request.number }}"' opened by '"${{ github.event.pull_request.user.login }}"'.\nTitle: '"${{ github.event.pull_request.title }}"'\nLink: '"${{ github.event.pull_request.html_url }}"'"
+                   }' \
                ${{ secrets.TEAMS_WEBHOOK_URL }}
 
-      # Step B: Notify when a PR is approved
+      # Step 2: Notify when a PR is approved
       - name: Notify when PR is approved
         if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "text": "Pull Request #'"${{ github.event.pull_request.number }}"' has been APPROVED by '"${{ github.event.review.user.login }}"'.\nLink: '"${{ github.event.pull_request.html_url }}"'"
-               }' \
+                     "text": "Pull Request: #'"${{ github.event.pull_request.number }}"' has been APPROVED by '"${{ github.event.review.user.login }}"'.\nLink: '"${{ github.event.pull_request.html_url }}"'"
+                   }' \
                ${{ secrets.TEAMS_WEBHOOK_URL }}
