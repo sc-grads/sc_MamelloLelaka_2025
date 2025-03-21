@@ -15,7 +15,35 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "text": "New Pull Request: #${{ github.event.pull_request.number }} opened by ${{ github.event.pull_request.user.login }}.\nTitle: ${{ github.event.pull_request.title }}\nLink: ${{ github.event.pull_request.html_url }}"
+                 "title": "${{ github.event.pull_request.user.login }} - New Pull Request 🆕",
+                 "sections": [{
+                   "activityTitle": "${{ github.event.pull_request.user.login }} - A new pull request is waiting for review! 👀",
+                   "facts": [
+                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
+                     { "name": "2. 📋 Description:", "value": "${{ github.event.pull_request.body || 'No description provided' }}" },
+                     { "name": "3. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
+                     { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
+                     { "name": "5. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
+                     { "name": "6. 📥 Target:", "value": "${{ github.event.pull_request.base.ref }}" }
+                   ],
+                   "markdown": true
+                 }],
+                 "potentialAction": [
+                   {
+                     "@type": "OpenUri",
+                     "name": "View PR",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }
+                     ]
+                   },
+                   {
+                     "@type": "OpenUri",
+                     "name": "View changes",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.event.pull_request.html_url }}/files" }
+                     ]
+                   }
+                 ]
                }' ${{ secrets.TEAMS_WEBHOOK_URL }}
               
       # 2. Notify when a PR review is submitted with an approval
@@ -25,7 +53,35 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "text": "Pull Request: #${{ github.event.pull_request.number }} has been APPROVED by ${{ github.event.review.user.login }}.\nLink: ${{ github.event.pull_request.html_url }}"
+                 "title": "${{ github.event.pull_request.user.login }} - Pull Request Approved ✅",
+                 "sections": [{
+                   "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been approved! 👍",
+                   "facts": [
+                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
+                     { "name": "2. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
+                     { "name": "3. ✨ Approved by:", "value": "${{ github.event.review.user.login }}" },
+                     { "name": "4. 💬 Review comment:", "value": "${{ github.event.review.body || 'No comment provided' }}" },
+                     { "name": "5. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
+                     { "name": "6. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" }
+                   ],
+                   "markdown": true
+                 }],
+                 "potentialAction": [
+                   {
+                     "@type": "OpenUri",
+                     "name": "View PR",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }
+                     ]
+                   },
+                   {
+                     "@type": "OpenUri",
+                     "name": "View review",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.event.pull_request.html_url }}#pullrequestreview-${{ github.event.review.id }}" }
+                     ]
+                   }
+                 ]
                }' ${{ secrets.TEAMS_WEBHOOK_URL }}
          
       # 3. Notify when a PR is merged (closed and merged)
@@ -35,5 +91,33 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "text": "A pull request has been successfully merged!\n\n*Repository:* `${{ github.repository }}`\n*PR Title:* `${{ github.event.pull_request.title }}`\n*Merged by:* `${{ github.event.pull_request.merged_by.login }}`\n[View PR](${{ github.event.pull_request.html_url }})"
+                 "title": "${{ github.event.pull_request.user.login }} - Pull Request Merged 🎉",
+                 "sections": [{
+                   "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been merged! 🚀",
+                   "facts": [
+                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
+                     { "name": "2. 📋 Description:", "value": "${{ github.event.pull_request.body || 'No description provided' }}" },
+                     { "name": "3. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
+                     { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
+                     { "name": "5. 🌿 Merged Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
+                     { "name": "6. 📥 Merged Into:", "value": "${{ github.event.pull_request.base.ref }}" }
+                   ],
+                   "markdown": true
+                 }],
+                 "potentialAction": [
+                   {
+                     "@type": "OpenUri",
+                     "name": "View run",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }
+                     ]
+                   },
+                   {
+                     "@type": "OpenUri",
+                     "name": "View commit",
+                     "targets": [
+                       { "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }
+                     ]
+                   }
+                 ]
                }' ${{ secrets.TEAMS_WEBHOOK_URL }}
