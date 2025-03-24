@@ -15,19 +15,19 @@ jobs:
           node-version: '16'
 
       - name: Install dependencies
-        working-directory: ./Practice_Project
+        working-directory: Practice_Project
         run: npm install
 
       - name: Lint
-        working-directory: ./Practice_Project
+        working-directory: Practice_Project
         run: npm run lint
 
       - name: Test code
-        working-directory: ./Practice_Project
+        working-directory: Practice_Project
         run: npm test
 
       - name: Build code
-        working-directory: ./Practice_Project
+        working-directory: Practice_Project
         run: npm run build
 
       - name: Deploy code
