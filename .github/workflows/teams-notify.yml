@@ -1,3 +1,4 @@
+
 name: Notify Teams on PR Events
 on:
   pull_request:
@@ -15,10 +16,6 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "@type": "MessageCard",
-                 "@context": "http://schema.org/extensions",
-                 "themeColor": "0076D7",
-                 "summary": "New Pull Request by ${{ github.event.pull_request.user.login }}",
                  "title": "${{ github.event.pull_request.user.login }} - New Pull Request 🆕",
                  "sections": [{
                    "activityTitle": "${{ github.event.pull_request.user.login }} - A new pull request is waiting for review! 👀",
@@ -29,7 +26,8 @@ jobs:
                      { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
                      { "name": "5. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
                      { "name": "6. 📥 Target:", "value": "${{ github.event.pull_request.base.ref }}" }
-                   ]
+                   ],
+                   "markdown": true
                  }],
                  "potentialAction": [
                    {
@@ -56,10 +54,6 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "@type": "MessageCard",
-                 "@context": "http://schema.org/extensions",
-                 "themeColor": "00FF00",
-                 "summary": "PR Approved by ${{ github.event.review.user.login }}",
                  "title": "${{ github.event.pull_request.user.login }} - Pull Request Approved ✅",
                  "sections": [{
                    "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been approved! 👍",
@@ -70,7 +64,8 @@ jobs:
                      { "name": "4. 💬 Review comment:", "value": "${{ github.event.review.body || 'No comment provided' }}" },
                      { "name": "5. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
                      { "name": "6. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" }
-                   ]
+                   ],
+                   "markdown": true
                  }],
                  "potentialAction": [
                    {
@@ -97,10 +92,6 @@ jobs:
           curl -X POST \
                -H "Content-Type: application/json" \
                -d '{
-                 "@type": "MessageCard",
-                 "@context": "http://schema.org/extensions",
-                 "themeColor": "6F42C1",
-                 "summary": "PR Merged by ${{ github.actor }}",
                  "title": "${{ github.event.pull_request.user.login }} - Pull Request Merged 🎉",
                  "sections": [{
                    "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been merged! 🚀",
@@ -111,7 +102,8 @@ jobs:
                      { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
                      { "name": "5. 🌿 Merged Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
                      { "name": "6. 📥 Merged Into:", "value": "${{ github.event.pull_request.base.ref }}" }
-                   ]
+                   ],
+                   "markdown": true
                  }],
                  "potentialAction": [
                    {
