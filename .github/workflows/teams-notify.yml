@@ -15,34 +15,36 @@ jobs:
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d "$(echo '{
-                 "title": "${{ github.event.pull_request.user.login }} - New Pull Request 🆕",
-                 "sections": [{
-                   "activityTitle": "${{ github.event.pull_request.user.login }} - A new pull request is waiting for review! 👀",
-                   "facts": [
-                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
-                     { "name": "2. 📋 Description:", "value": "${{ github.event.pull_request.body && github.event.pull_request.body || ''No description provided'' }}" },
-                     { "name": "3. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
-                     { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
-                     { "name": "5. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
-                     { "name": "6. 📥 Target:", "value": "${{ github.event.pull_request.base.ref }}" }
-                   ],
-                   "markdown": true
-                 }],
-                 "potentialAction": [
-                   {
-                     "@type": "OpenUri",
-                     "name": "View PR",
-                     "targets": [{ "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }]
-                   },
-                   {
-                     "@type": "OpenUri",
-                     "name": "View changes",
-                     "targets": [{ "os": "default", "uri": "${{ github.event.pull_request.html_url }}/files" }]
-                   }
-                 ]
-               }' | sed 's/"/\\"/g')" \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               -d "$(
+                  jq -c -n \
+                    --arg title "${{ github.event.pull_request.user.login }} - New Pull Request 🆕" \
+                    --arg pr_title "${{ github.event.pull_request.title }}" \
+                    --arg pr_body "${{ github.event.pull_request.body || 'No description provided' }}" \
+                    --arg author "${{ github.event.pull_request.user.login }}" \
+                    --arg pr_url "${{ github.event.pull_request.html_url }}" \
+                    --arg branch "${{ github.head_ref || github.ref_name }}" \
+                    --arg target "${{ github.event.pull_request.base.ref }}" \
+                    '{
+                      "title": $title,
+                      "sections": [{
+                        "activityTitle": ($author + " - A new pull request is waiting for review! 👀"),
+                        "facts": [
+                          {"name": "1. 📝 Title:", "value": $pr_title},
+                          {"name": "2. 📋 Description:", "value": $pr_body},
+                          {"name": "3. 👤 Author:", "value": $author},
+                          {"name": "4. 🔗 View PR", "value": $pr_url},
+                          {"name": "5. 🌿 Branch:", "value": $branch},
+                          {"name": "6. 📥 Target:", "value": $target}
+                        ],
+                        "markdown": true
+                      }],
+                      "potentialAction": [
+                        {"@type": "OpenUri", "name": "View PR", "targets": [{"os": "default", "uri": $pr_url}]},
+                        {"@type": "OpenUri", "name": "View changes", "targets": [{"os": "default", "uri": ($pr_url + "/files")}]}
+                      ]
+                    }'
+               )" \
+               ${{ secrets.TEAMS_WEBHOOK_URL }} || echo "Failed to send Teams notification"
 
       # 2. Notify when a PR review is submitted with an approval
       - name: Notify on PR approval
@@ -50,34 +52,37 @@ jobs:
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d "$(echo '{
-                 "title": "${{ github.event.pull_request.user.login }} - Pull Request Approved ✅",
-                 "sections": [{
-                   "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been approved! 👍",
-                   "facts": [
-                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
-                     { "name": "2. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
-                     { "name": "3. ✨ Approved by:", "value": "${{ github.event.review.user.login }}" },
-                     { "name": "4. 💬 Review comment:", "value": "${{ github.event.review.body && github.event.review.body || ''No comment provided'' }}" },
-                     { "name": "5. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
-                     { "name": "6. 🌿 Branch:", "value": "${{ github.head_ref || github.ref_name }}" }
-                   ],
-                   "markdown": true
-                 }],
-                 "potentialAction": [
-                   {
-                     "@type": "OpenUri",
-                     "name": "View PR",
-                     "targets": [{ "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }]
-                   },
-                   {
-                     "@type": "OpenUri",
-                     "name": "View review",
-                     "targets": [{ "os": "default", "uri": "${{ github.event.pull_request.html_url }}#pullrequestreview-${{ github.event.review.id }}" }]
-                   }
-                 ]
-               }' | sed 's/"/\\"/g')" \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               -d "$(
+                  jq -c -n \
+                    --arg title "${{ github.event.pull_request.user.login }} - Pull Request Approved ✅" \
+                    --arg pr_title "${{ github.event.pull_request.title }}" \
+                    --arg author "${{ github.event.pull_request.user.login }}" \
+                    --arg reviewer "${{ github.event.review.user.login }}" \
+                    --arg comment "${{ github.event.review.body || 'No comment provided' }}" \
+                    --arg pr_url "${{ github.event.pull_request.html_url }}" \
+                    --arg branch "${{ github.head_ref || github.ref_name }}" \
+                    --arg review_id "${{ github.event.review.id }}" \
+                    '{
+                      "title": $title,
+                      "sections": [{
+                        "activityTitle": ($author + " - A pull request has been approved! 👍"),
+                        "facts": [
+                          {"name": "1. 📝 Title:", "value": $pr_title},
+                          {"name": "2. 👤 Author:", "value": $author},
+                          {"name": "3. ✨ Approved by:", "value": $reviewer},
+                          {"name": "4. 💬 Review comment:", "value": $comment},
+                          {"name": "5. 🔗 View PR", "value": $pr_url},
+                          {"name": "6. 🌿 Branch:", "value": $branch}
+                        ],
+                        "markdown": true
+                      }],
+                      "potentialAction": [
+                        {"@type": "OpenUri", "name": "View PR", "targets": [{"os": "default", "uri": $pr_url}]},
+                        {"@type": "OpenUri", "name": "View review", "targets": [{"os": "default", "uri": ($pr_url + "#pullrequestreview-" + $review_id)}]}
+                      ]
+                    }'
+               )" \
+               ${{ secrets.TEAMS_WEBHOOK_URL }} || echo "Failed to send Teams notification"
 
       # 3. Notify when a PR is merged (closed and merged)
       - name: Notify on PR merge
@@ -85,31 +90,34 @@ jobs:
         run: |
           curl -X POST \
                -H "Content-Type: application/json" \
-               -d "$(echo '{
-                 "title": "${{ github.event.pull_request.user.login }} - Pull Request Merged 🎉",
-                 "sections": [{
-                   "activityTitle": "${{ github.event.pull_request.user.login }} - A pull request has been merged! 🚀",
-                   "facts": [
-                     { "name": "1. 📝 Title:", "value": "${{ github.event.pull_request.title }}" },
-                     { "name": "2. 📋 Description:", "value": "${{ github.event.pull_request.body && github.event.pull_request.body || ''No description provided'' }}" },
-                     { "name": "3. 👤 Author:", "value": "${{ github.event.pull_request.user.login }}" },
-                     { "name": "4. 🔗 View PR", "value": "${{ github.event.pull_request.html_url }}" },
-                     { "name": "5. 🌿 Merged Branch:", "value": "${{ github.head_ref || github.ref_name }}" },
-                     { "name": "6. 📥 Merged Into:", "value": "${{ github.event.pull_request.base.ref }}" }
-                   ],
-                   "markdown": true
-                 }],
-                 "potentialAction": [
-                   {
-                     "@type": "OpenUri",
-                     "name": "View run",
-                     "targets": [{ "os": "default", "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" }]
-                   },
-                   {
-                     "@type": "OpenUri",
-                     "name": "View commit",
-                     "targets": [{ "os": "default", "uri": "${{ github.event.pull_request.html_url }}" }]
-                   }
-                 ]
-               }' | sed 's/"/\\"/g')" \
-               ${{ secrets.TEAMS_WEBHOOK_URL }}
+               -d "$(
+                  jq -c -n \
+                    --arg title "${{ github.event.pull_request.user.login }} - Pull Request Merged 🎉" \
+                    --arg pr_title "${{ github.event.pull_request.title }}" \
+                    --arg pr_body "${{ github.event.pull_request.body || 'No description provided' }}" \
+                    --arg author "${{ github.event.pull_request.user.login }}" \
+                    --arg pr_url "${{ github.event.pull_request.html_url }}" \
+                    --arg branch "${{ github.head_ref || github.ref_name }}" \
+                    --arg target "${{ github.event.pull_request.base.ref }}" \
+                    --arg run_url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+                    '{
+                      "title": $title,
+                      "sections": [{
+                        "activityTitle": ($author + " - A pull request has been merged! 🚀"),
+                        "facts": [
+                          {"name": "1. 📝 Title:", "value": $pr_title},
+                          {"name": "2. 📋 Description:", "value": $pr_body},
+                          {"name": "3. 👤 Author:", "value": $author},
+                          {"name": "4. 🔗 View PR", "value": $pr_url},
+                          {"name": "5. 🌿 Merged Branch:", "value": $branch},
+                          {"name": "6. 📥 Merged Into:", "value": $target}
+                        ],
+                        "markdown": true
+                      }],
+                      "potentialAction": [
+                        {"@type": "OpenUri", "name": "View run", "targets": [{"os": "default", "uri": $run_url}]},
+                        {"@type": "OpenUri", "name": "View commit", "targets": [{"os": "default", "uri": $pr_url}]}
+                      ]
+                    }'
+               )" \
+               ${{ secrets.TEAMS_WEBHOOK_URL }} || echo "Failed to send Teams notification"
