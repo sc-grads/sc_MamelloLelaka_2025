@@ -1,0 +1,3 @@
+GRAVITY_M_S2 = 9.81
+
+print(GRAVITY_M_S2)
